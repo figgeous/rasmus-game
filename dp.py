@@ -22,7 +22,7 @@ def can_reach_target_with_solution(arr, multipliers, target):
                         if s_mul not in DP[i]:
                             DP[i][s_mul] = (s_next, 'mul', m)
     # Reconstruct path if possible
-    if 0 in DP[0]:
+    if arr[0] in DP[0]:
         path = []
         idx = 0
         s = 0
