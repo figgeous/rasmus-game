@@ -2,50 +2,49 @@ import random
 
 def can_reach_target_with_solution(arr, multipliers, target):
     n = len(arr)
-    max_s = target
-    DP = [dict() for _ in range(n+1)]  # DP[i][s] = (prev_s, op, op_val)
-    DP[n][target] = None  # At the end, only target is a winning state
+    DP = [dict() for _ in range(n+1)]
+    DP[n][target] = None
 
+    # Build backwards, allowing an early-exit injection of the target
     for i in range(n-1, -1, -1):
-        for s_next in DP[i+1]:
+        # “If you can reach the target from i+1, you can also just stop at i.”
+        if target in DP[i+1]:
             DP[i][target] = None
-            # Case 1: s + arr[i] == s_next => s = s_next - arr[i]
+
+        for s_next in DP[i+1]:
+            # Case A: addition
             s_add = s_next - arr[i]
-            if 0 <= s_add <= max_s:
-                if s_add not in DP[i]:
-                    DP[i][s_add] = (s_next, 'add', arr[i])
-            # Case 2: s * m == s_next => s = s_next // m if divisible
-            for m in multipliers:
-                if s_next % m == 0:
-                    s_mul = s_next // m
-                    if 0 <= s_mul <= max_s:
-                        if s_mul not in DP[i]:
-                            DP[i][s_mul] = (s_next, 'mul', m)
-    # Reconstruct path if possible
-    if arr[0] in DP[0]:
-        path = []
-        idx = 0
-        s = 0
-        while idx < n:
-            if DP[idx][s] is None:  # we've reached the target
-                break
-            prev_s, op, val = DP[idx][s]
-            path.append((idx, s, op, val))
-            if op == 'add':
-                s = s + val
-            else:  # 'mul'
-                s = s * val
-            idx += 1
-        return True, path
-    else:
+            if s_add >= 0:
+                DP[i].setdefault(s_add, (s_next, 'add', arr[i]))
+
+            # Case B: multiplication—but *skip* this at i==0!
+            if i > 0:
+                for m in multipliers:
+                    if s_next % m == 0:
+                        s_mul = s_next // m
+                        DP[i].setdefault(s_mul, (s_next, 'mul', m))
+
+    # If you never marked s=0 as “good” at layer 0, there is no valid path
+    if 0 not in DP[0]:
         return False, None
+
+    # Reconstruct: start at s=0 and stop as soon as we hit a None (the early-exit flag)
+    path = []
+    s, i = 0, 0
+    while i < n and DP[i][s] is not None:
+        next_s, op, val = DP[i][s]
+        path.append((i, s, op, val))
+        s, i = next_s, i + 1
+
+    return True, path
 
 def run_dp(arr, multipliers, target):
     possible, path = can_reach_target_with_solution(arr, multipliers, target)
     return possible, path
 
 def main(n=81, target=5000):
-    arr = [random.randint(0, 10) for _ in range(n)]
+    arr = [random.randint(0, 100) for _ in range(n)]
+
     multipliers = [2, 5, 10]
     print(f"Array: {arr}")
     print(f"Target: {target}")
@@ -61,10 +60,6 @@ def main(n=81, target=5000):
             else:
                 print(f"Step {idx}: s = {s} * {val} -> {s*val}")
                 s = s * val
-
-def can_reach_target(arr, multipliers, target):
-    # Backward compatibility
-    return can_reach_target_with_solution(arr, multipliers, target)[0]
 
 if __name__ == "__main__":
     main()

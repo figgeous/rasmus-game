@@ -31,6 +31,8 @@ def run_brute(arr, multipliers, target):
 
 if __name__ == "__main__":
     arr = [random.randint(1, 100) for _ in range(81)]
+    arr = [41, 70, 29, 85, 88, 57, 23, 84, 27, 93, 86, 56]
+
     multipliers = [2, 5, 10]
     target = 5000
     found, path = run_brute(arr, multipliers, target)
