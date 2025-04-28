@@ -38,7 +38,9 @@ def can_reach_target_with_solution(arr, multipliers, target):
 
     return True, path
 
-def run_dp(arr, multipliers, target):
+def run_dp(arr, multipliers, target, limit=None):
+    if limit is not None:
+        arr = arr[:limit]
     possible, path = can_reach_target_with_solution(arr, multipliers, target)
     return possible, path
 
